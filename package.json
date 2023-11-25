@@ -6,6 +6,7 @@
     "start": "vite --host",
     "dev": "vite --host",
     "build": "tsc && vite build",
+    "server": "node -r esm src/server.js",
     "serve": "vite preview"
   },
   "devDependencies": {
@@ -14,5 +15,8 @@
   },
   "keywords": [],
   "description": "",
-  "dependencies": {}
+  "dependencies": {
+    "boardgame.io": "^0.50.2",
+    "esm": "^3.2.25"
+  }
 }
