@@ -3,8 +3,10 @@ import "./styles/style.css";
 
 const k = kaboom({
   // background: [20, 20, 20],
-  width: window.innerWidth,
-  height: window.innerHeight,
+  // @ts-ignore
+  letterbox: true,
+  width: 1280,
+  height: 720,
 });
 type Marker = "drone" | "bot";
 let selectedMarker: Marker = "bot";
@@ -26,8 +28,6 @@ const {
   scale,
 } = k;
 
-k.loadSprite("drone", "../assets/drone.png");
-k.loadSprite("bot", "../assets/bot.png");
 scene("game", () => {
   createGrid();
   createButton("Drone", "drone", width() - 210, height() / 2 - 150);
@@ -110,4 +110,21 @@ const createGrid = () => {
   }
 };
 
-start("game");
+const scenes = {
+  menu: () => {
+    // Menu scene logic here
+    add([text("test"), pos(width() / 2, height() / 2)]);
+  },
+  gameover: () => {
+    // Gameover scene logic here
+  },
+  game: () => {
+    // Game scene logic here
+  },
+};
+
+for (const [name, scene] of Object.entries(scenes)) {
+  k.scene(name, scene);
+}
+
+k.go("game");
