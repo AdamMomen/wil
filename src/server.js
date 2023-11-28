@@ -3,11 +3,7 @@ const { TicTacToe } = require("./Game");
 
 const server = Server({
   games: [TicTacToe],
-  origins: [
-    Origins.LOCALHOST,
-    Origins.LOCALHOST_IN_DEVELOPMENT,
-    "https://grid-master.vercel.app",
-  ],
+  origins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT],
 });
 
 server.run(8000);

@@ -1,14 +1,12 @@
 import { Client } from "boardgame.io/client";
 import { SocketIO, Local } from "boardgame.io/multiplayer";
-import { TicTacToe } from "./Game";
+import { CELLS, TicTacToe } from "./Game";
 
 class TicTacToeClient {
   constructor(rootElement, { playerID } = {}) {
     this.client = Client({
       game: TicTacToe,
-      multiplayer: SocketIO({
-        server: "0.tcp.ap.ngrok.io:19889",
-      }),
+      multiplayer: Local(), //SocketIO({ server: "0.tcp.ap.ngrok.io:19538", }),
       matchID: "adam-and-rob",
       playerID,
     });
@@ -20,10 +18,10 @@ class TicTacToeClient {
   }
   createBoard() {
     const rows = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < CELLS.x; i++) {
       const cells = [];
-      for (let j = 0; j < 3; j++) {
-        const id = 3 * i + j;
+      for (let j = 0; j < CELLS.y; j++) {
+        const id = `${i},${j}`;
         cells.push(`<td class="cell" data-id="${id}"></td>`);
       }
       rows.push(`<tr>${cells.join("")}</tr>`);
@@ -36,8 +34,10 @@ class TicTacToeClient {
 
   attachListeners() {
     const handleCellClick = (event) => {
-      const id = parseInt(event.target.dataset.id);
-      this.client.moves.clickCell(id);
+      // const id = parseInt(event.target.dataset.id);
+      const [x, y] = event.target.dataset.id.split(",").map((i) => parseInt(i));
+
+      this.client.moves.clickCell(x, y);
       this.client.events.endTurn();
     };
     const cells = this.rootElement.querySelectorAll(".cell");
@@ -49,9 +49,8 @@ class TicTacToeClient {
     if (state === null) return;
     const cells = this.rootElement.querySelectorAll(".cell");
     cells.forEach((cell) => {
-      const cellId = parseInt(cell.dataset.id);
-      const cellValue = state.G.cells[cellId];
-      console.log(cellValue);
+      const [x, y] = cell.dataset.id.split(",").map((i) => parseInt(i));
+      const cellValue = state.G.cells[x][y];
       const marker = cellValue !== null ? (cellValue === "0" ? "O" : "X") : "";
       cell.textContent = marker !== null ? marker : "";
     });
@@ -68,14 +67,13 @@ class TicTacToeClient {
 }
 
 const appElement = document.getElementById("app");
-let playerName = prompt("Please enter your player name:");
-if (!playerName) {
-  alert("Please enter a player name");
-} else {
-  const client = new TicTacToeClient(appElement, { playerID: playerName });
-}
+// let playerName = prompt("Please enter your player name:");
+// if (!playerName) {
+//   alert("Please enter a player name");
+// } else {
+//   const client = new TicTacToeClient(appElement, { playerID: playerName });
+// }
 
-/*
 const playerIDs = ["0", "1"];
 
 const clients = playerIDs.map((playerID) => {
@@ -83,4 +81,3 @@ const clients = playerIDs.map((playerID) => {
   appElement.append(rootElement);
   return new TicTacToeClient(rootElement, { playerID });
 });
-*/
