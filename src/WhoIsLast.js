@@ -20,13 +20,11 @@ function createGrid(rows, cols) {
     .map(() => Array(cols).fill(null));
 }
 
-const placeMarker = (
-  { G: { grid, players }, playerID, ctx },
-  x,
-  y,
-  markerType
-) => {
+const placeMarker = (first, x, y, markerType, ...other) => {
+  console.log({ first });
+  console.log("placeMarker", markerType, x, y);
   const currentPlayer = players[playerID];
+  console.log(currentPlayer);
   const markerCount =
     markerType === Markers.EVADER_BOT ? "evaderBotCount" : "seekerDroneCount";
   const markerArray =

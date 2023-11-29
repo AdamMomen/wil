@@ -1,49 +1,50 @@
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom/client";
 import { Client } from "boardgame.io/react";
 import { SocketIO, Local } from "boardgame.io/multiplayer";
 import { WhoIsLast, config, Markers } from "./WhoIsLast";
 
-const WhoIsLastClient = ({ playerID, matchID }) => {
-  const [client, setClient] = useState(null);
-  const [state, setState] = useState(null);
+const cellStyle = {
+  border: "1px solid #555",
+  width: "50px",
+  height: "50px",
+  lineHeight: "50px",
+  textAlign: "center",
+};
 
-  useEffect(() => {
-    const bgioClient = Client({
-      game: WhoIsLast,
-      multiplayer: Local(), //SocketIO({ server: "0.tcp.ap.ngrok.io:19538", }),
-      matchID,
-      playerID,
-    });
-    bgioClient.start();
-    setClient(bgioClient);
-
-    const unsubscribe = bgioClient.subscribe((state) => setState(state));
-    return () => unsubscribe();
-  }, [matchID, playerID]);
+const Board = ({ ctx, G, moves, playerID = "0" }) => {
+  const [selectedMarker, setSelectedMarker] = useState("SeekerDrone");
+  const onClick = (x, y, markerType) => moves.placeMarker(x, y, markerType);
+  let winner = "";
+  if (ctx.gameover) {
+    winner =
+      ctx.gameover.winner !== undefined
+        ? "Winner: " + ctx.gameover.winner
+        : "Draw!";
+  }
 
   const handleCellClick = (x, y) => {
-    const markerType = document.getElementById(`markerType-${playerID}`).value;
-    const cell = state.G.grid[x][y];
+    const cell = G.grid[x][y];
     const cellMarker = cell && cell[playerID] ? cell[playerID].marker : null;
     if (cellMarker) {
-      client.moves.removeMarker(x, y);
+      moves.removeMarker(x, y);
     } else {
-      client.moves.placeMarker(x, y, markerType);
+      moves.placeMarker(x, y, selectedMarker);
     }
   };
 
-  if (!state) {
-    return <div>Loading...</div>;
-  }
-
-  const { G, ctx } = state;
   const player = G.players[playerID];
   const rows = G.grid.map((row, x) => (
     <tr key={x}>
       {row.map((cell, y) => {
         const marker = cell && cell[playerID] ? cell[playerID].marker : null;
         return (
-          <td key={y} className="cell" onClick={() => handleCellClick(x, y)}>
+          <td
+            key={y}
+            className="cell"
+            style={cellStyle}
+            onClick={() => handleCellClick(x, y)}
+          >
             {marker && (
               <span
                 style={{
@@ -59,28 +60,51 @@ const WhoIsLastClient = ({ playerID, matchID }) => {
     </tr>
   ));
 
+  const Scoreboard = ({ player }) => (
+    <div className="score-board">
+      Evader Bots: {player.evaderBotCount} | Seeker Drones:{" "}
+      {player.seekerDroneCount}
+    </div>
+  );
+  const Grid = () => (
+    <table>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+  const MarkerType = () => (
+    <select
+      id={`markerType-${playerID}`}
+      onChange={(e) => setSelectedMarker(e.target.value)}
+      value={selectedMarker}
+    >
+      <option value="SeekerDrone">Drone</option>
+      <option value="EvaderBot">Bot</option>
+    </select>
+  );
+  const Result = () => (
+    <p className="winner">
+      {ctx.gameover
+        ? ctx.gameover.winner !== undefined
+          ? "Winner: Player " + ctx.gameover.winner
+          : "Draw!"
+        : ""}
+    </p>
+  );
+
   return (
     <div>
-      <div className="score-board">
-        Evader Bots: {player.evaderBotCount} | Seeker Drones:{" "}
-        {player.seekerDroneCount}
-      </div>
-      <table>
-        <tbody>{rows}</tbody>
-      </table>
-      <select id={`markerType-${playerID}`}>
-        <option value="SeekerDrone">Drone</option>
-        <option value="EvaderBot">Bot</option>
-      </select>
-      <p className="winner">
-        {ctx.gameover
-          ? ctx.gameover.winner !== undefined
-            ? "Winner: Player " + ctx.gameover.winner
-            : "Draw!"
-          : ""}
-      </p>
+      <Scoreboard player={player} />
+      <Grid />
+      <MarkerType />
+      <Result />
     </div>
   );
 };
 
-export default WhoIsLastClient;
+const root = ReactDOM.createRoot(document.getElementById("app"));
+const App = Client({
+  game: WhoIsLast,
+  board: Board,
+  multiplayer: SocketIO({ server: "localhost:8000" }),
+});
+root.render(<App />);

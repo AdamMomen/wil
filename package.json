@@ -17,6 +17,8 @@
   "description": "",
   "dependencies": {
     "boardgame.io": "^0.50.2",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
