@@ -3,7 +3,7 @@ const { TicTacToe } = require("./TicTacToe");
 const { WhoIsLast } = require("./WhoIsLast");
 
 const server = Server({
-  games: WhoIsLast,
+  games: [WhoIsLast],
   origins: [Origins.LOCALHOST, Origins.LOCALHOST_IN_DEVELOPMENT],
 });
 

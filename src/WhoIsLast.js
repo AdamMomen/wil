@@ -1,8 +1,8 @@
 import { ActivePlayers, INVALID_MOVE, Stage } from "boardgame.io/core";
 export const config = {
   grid: {
-    rows: 5,
-    cols: 5,
+    rows: 10,
+    cols: 10,
   },
   evaderBotRatio: 0.1,
   seekerDroneRatio: 0.03,
@@ -27,7 +27,6 @@ const placeMarker = (
   markerType
 ) => {
   const currentPlayer = players[playerID];
-  console.log({ markerType });
   const markerCount =
     markerType === Markers.EVADER_BOT ? "evaderBotCount" : "seekerDroneCount";
   const markerArray =
@@ -38,7 +37,7 @@ const placeMarker = (
     if (!grid[x][y]) {
       grid[x][y] = {};
     }
-    grid[x][y][currentPlayer] = {
+    grid[x][y][playerID] = {
       playerId: currentPlayer,
       marker: markerType,
     };
@@ -46,12 +45,25 @@ const placeMarker = (
   }
 };
 
-const removeMarker = (G, currentPlayer, x, y, markerType) => {
-  if (G.grid[x][y]) {
-    delete G.grid[x][y][currentPlayer];
-    if (Object.keys(G.grid[x][y]).length === 0) {
-      G.grid[x][y] = null;
-    }
+const removeMarker = ({ G, playerID }, x, y) => {
+  if (!G.grid[x][y]) return;
+
+  const deletedMarker = G.grid[x][y][playerID].marker;
+  if (deletedMarker === Markers.EVADER_BOT) {
+    G.players[playerID].evaderBotCount++;
+    G.players[playerID].evaderBots = G.players[playerID].evaderBots.filter(
+      ({ x: x1, y: y1 }) => x1 !== x || y1 !== y
+    );
+  } else if (deletedMarker === Markers.SEEKER_DRONE) {
+    G.players[playerID].seekerDroneCount++;
+
+    G.players[playerID].evaderBots = G.players[playerID].seekerDrones.filter(
+      ({ x: x1, y: y1 }) => x1 !== x || y1 !== y
+    );
+  }
+  delete G.grid[x][y][playerID];
+  if (Object.keys(G.grid[x][y]).length === 0) {
+    G.grid[x][y] = null;
   }
 };
 
@@ -74,9 +86,6 @@ export const WhoIsLast = {
     }
 
     return {
-      turn: {
-        minMoves: 1,
-      },
       players,
       grid,
       round: 1,
@@ -85,28 +94,6 @@ export const WhoIsLast = {
   moves: {
     removeMarker,
     placeMarker,
-    placeMarkerOnGrid(
-      { G: { grid, players }, playerID, ctx },
-      x,
-      y,
-      markerType
-    ) {
-      if (grid[x][y] !== null) return INVALID_MOVE;
-
-      const currentPlayer = players[playerID];
-      const markerCount =
-        markerType === Markers.EVADER_BOT
-          ? "evaderBotCount"
-          : "seekerDroneCount";
-      const markerArray =
-        markerType === Markers.EVADER_BOT ? "evaderBots" : "seekerDrones";
-
-      if (currentPlayer[markerCount] > 0) {
-        currentPlayer[markerArray].push({ x, y });
-        placeMarker(grid, playerID, x, y, markerType);
-        currentPlayer[markerCount]--;
-      }
-    },
     readyPlayer({ G, playerID }, ctx) {
       G.players[playerID].isReady = true;
     },
@@ -114,6 +101,7 @@ export const WhoIsLast = {
   turn: {
     activePlayers: ActivePlayers.ALL,
     onBegin({ G }, ctx) {
+      console.log("on begin");
       Object.values(G.players).forEach((p) => (p.isReady = false));
     },
     onEnd({ G }, ctx) {
