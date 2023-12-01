@@ -8,8 +8,9 @@ const App = Client({
   board: Board,
   multiplayer: Local(),
 });
-/*
-  <div className="h-screen w-screen justify-center items-center">
+
+const Multiplayer = () => (
+  <div className="flex h-screen w-screen justify-center items-center">
     <div>
       <h1>Multiplayer</h1>
       <div
@@ -24,11 +25,6 @@ const App = Client({
         </div>
       </div>
     </div>
-  </div>*/
-
-const Multiplayer = () => (
-  <div className="">
-    <h1>Hello world</h1>
   </div>
 );
 
