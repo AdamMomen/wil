@@ -121,8 +121,8 @@ const WhoIsLast = {
   moves: {
     removeMarker,
     placeMarker,
-    readyPlayer({ G, playerID }: GameContext) {
-      G.players[playerID].isReady = true;
+    toggleReady({ G, playerID }: GameContext) {
+      G.players[playerID].isReady = !G.players[playerID].isReady;
     },
   },
     turn: {

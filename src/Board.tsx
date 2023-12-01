@@ -1,8 +1,7 @@
 import "./Board.css";
-import React, { CSSProperties, useState } from "react";
-import PropTypes from "prop-types";
+import  { CSSProperties, useState } from "react";
 import { BoardProps } from "boardgame.io/react";
-import { Players, Markers, GameState, PlayerState } from "./Game";
+import {  Markers, GameState, PlayerState } from "./Game";
 
 const cellStyle: CSSProperties = {
   border: "1px solid #555",
@@ -102,12 +101,15 @@ const Board = ({ G, ctx, moves, playerID }: BoardProps<GameState>) => {
         : ""}
     </p>
   );
-  const ReadyButton = () => (
+  const ReadyButton = ({isReady }: {isReady:boolean}) => (
     <button
+      style={{
+                color: isReady ? 'red': 'green'
+            }}
       className="ready-button"
-      onClick={() => console.log("Ready button clicked")}
+      onClick={() => moves.toggleReady()}
     >
-      Ready
+            {isReady? 'Hold': 'Ready'}
     </button>
   );
   const isMarkerPlaced =
@@ -118,7 +120,7 @@ const Board = ({ G, ctx, moves, playerID }: BoardProps<GameState>) => {
       <Grid />
       <MarkerType />
       <br />
-      <>{isMarkerPlaced && <ReadyButton />}</>
+      <>{isMarkerPlaced && <ReadyButton isReady={player.isReady} />}</>
       <Result />
     </div>
   );
