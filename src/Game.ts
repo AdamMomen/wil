@@ -125,6 +125,8 @@ const WhoIsLast = {
       G.players[playerID].isReady = true;
     },
   },
+    turn: {
+    }
 };
 
 export default WhoIsLast;
