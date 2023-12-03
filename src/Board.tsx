@@ -2,13 +2,7 @@ import { CSSProperties, useState } from "react";
 import { BoardProps } from "boardgame.io/react";
 import { Markers, GameState, PlayerState } from "./Game";
 
-const cellStyle: CSSProperties = {
-  border: "1px solid #555",
-  width: "50px",
-  height: "50px",
-  lineHeight: "50px",
-  textAlign: "center",
-};
+const cellStyle = "border border-gray-500 w-12 h-12 leading-12 text-center";
 
 const Board = ({ G, ctx, moves, playerID }: BoardProps<GameState>) => {
   if (!playerID) return <>No Player</>;
@@ -33,8 +27,8 @@ const Board = ({ G, ctx, moves, playerID }: BoardProps<GameState>) => {
         return (
           <td
             key={y}
-            className="cell"
-            style={cellStyle}
+            className="border border-gray-500 w-12 h-12 leading-12 text-center"
+            // style={cellStyle}
             onClick={() => handleCellClick(x, y)}
           >
             {marker && (

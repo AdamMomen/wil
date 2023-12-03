@@ -10,17 +10,14 @@ const App = Client({
 });
 
 const Multiplayer = () => (
-  <div className="flex h-screen w-screen justify-center items-center">
+  <div className="flex flex-row justify-center items-center">
     <div>
-      <h1>Multiplayer</h1>
-      <div
-        className="runner"
-        style={{ justifyContent: "center", maxWidth: "1024px" }}
-      >
-        <div className="run">
+      <h1 className="text-3xl text-bold">Multiplayer</h1>
+      <div className="pt-5">
+        <div className="">
           <App matchID="multi" playerID="0" />
         </div>
-        <div className="run">
+        <div className="mt-8">
           <App matchID="multi" playerID="1" />
         </div>
       </div>
