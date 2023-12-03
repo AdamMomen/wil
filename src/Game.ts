@@ -3,9 +3,10 @@ import { Ctx, Game } from "boardgame.io";
 
 export const config = {
   grid: {
-    rows: 10,
-    cols: 10,
+    rows: 3,
+    cols: 3,
   },
+  maxRounds: 10,
   evaderBotRatio: 0.1,
   seekerDroneRatio: 0.03,
 };
@@ -30,6 +31,7 @@ type Coord = {
 };
 
 export type PlayerState = {
+  id: string;
   isReady: boolean;
   evaderBots: Coord[];
   seekerDrones: Coord[];
@@ -100,6 +102,7 @@ const WhoIsLast = {
     const players: Players = {};
     for (let i = 0; i < ctx.numPlayers; i++) {
       players[i] = {
+        id: "" + i,
         evaderBots: [], // Array to store positions of Evader Bots
         seekerDrones: [], // Array to store positions of Seeker Drones
         isReady: false, // Flag to check if the player is ready
@@ -127,6 +130,61 @@ const WhoIsLast = {
   },
   turn: {
     activePlayers: ActivePlayers.ALL,
+    onBegin({ G }: GameContext) {
+      console.log("on begin");
+      Object.values(G.players).forEach((p) => (p.isReady = false));
+    },
+    onEnd({ G }: GameContext) {
+      console.log("on End here");
+      G.grid.forEach((row, x) => {
+        row.forEach((cell, y) => {
+          if (cell) {
+            const evaderBotPlayerID = Object.keys(cell).find(
+              (key) => cell[key] === Markers.EVADER_BOT
+            );
+            const seekerDronePlayerID = Object.keys(cell).find(
+              (key) => cell[key] === Markers.SEEKER_DRONE
+            );
+            if (evaderBotPlayerID && seekerDronePlayerID) {
+              cell[evaderBotPlayerID] = Markers.DESTROYED;
+              G.players[evaderBotPlayerID].evaderBots = G.players[
+                evaderBotPlayerID
+              ].evaderBots.filter((b) => b.x !== x || b.y !== y);
+              G.players[seekerDronePlayerID].seekerDroneCount++;
+            }
+          }
+        });
+      });
+      G.round++;
+    },
+  },
+  endIf: ({ G: { players, round }, ctx }: GameContext) => {
+    // Check if only one player has Evader Bots left
+    const readyPlayers = Object.values(players).filter((p) => p.isReady);
+    if (readyPlayers.length < ctx.numPlayers) {
+      return;
+    }
+
+    console.log("Evaluating game round result");
+
+    // check time is up situation and one of the players are not ready
+    const lastPlayerWithBot = readyPlayers.filter((p) => p.evaderBotCount > 0);
+
+    if (lastPlayerWithBot.length <= 1) {
+      return {
+        winner: lastPlayerWithBot.length === 1 ? lastPlayerWithBot[0].id : null,
+      };
+    }
+    round++;
+    // start a new patch
+    if (round >= config.maxRounds) {
+      const playersWithBots = Object.values(players).filter(
+        (p) => p.evaderBotCount > 0
+      );
+      if (playersWithBots.length === 1) {
+        return { winner: playersWithBots[0].id };
+      }
+    }
   },
 };
 
